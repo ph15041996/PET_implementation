@@ -11,7 +11,7 @@
 * ```cd linux-5.15/```
 * ```sudo apt update```
 * ```sudo apt install gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu```
-* ```sudo apt install build-essential libncurses-dev bison flex libssl```
+* ```sudo apt install build-essential libncurses-dev bison flex libssl-dev```
 * ```aarch64-linux-gnu-gcc --version```
 * ```make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig```
 * Navigate to Kernel hacking -> Memory Debugging and enable KASAN: runtime memory debugger
@@ -33,6 +33,9 @@
 * create VM for ubuntu desktop 20.4
 * After the os is runnning in the vm check the kernel version using -> 
     ```*uname -r*``` output ```5.15.0-126-generic```
+* ```sudo apt install  -y build-essential libncurses-dev flex bison libelf-dev libssl-dev```
+* ```sudo apt install dwarves```
+* ```sudo apt-get install zstd```
 * then run \
 ```wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.15.tar.xz```
 * ```tar -xf linux-5.15.tar.xz```
@@ -62,15 +65,64 @@ make: *** [Makefile:1501: __modinst_pre] Error 2```
 * ```cp /boot/config-$(uname -r) .config```
 * ```nano .config```\
     Search for CONFIG_X86_X32 and set it to n \
-    Search for CONFIG_SYSTEM_TRUSTED_KEYS \
-    change CONFIG_SYSTEM_TRUSTED_KEYS="debian/canonical-certs.pem" 
-    to CONFIG_SYSTEM_TRUSTED_KEYS="" 
+    Certificates need to be configured :
+    ```
+    #
+    # Certificates for signature checking
+    #
+    CONFIG_MODULE_SIG_KEY="certs/signing_key.pem"
+    CONFIG_MODULE_SIG_KEY_TYPE_RSA=y
+    CONFIG_MODULE_SIG_KEY_TYPE_ECDSA=y
+    CONFIG_SYSTEM_TRUSTED_KEYRING=y
+    CONFIG_SYSTEM_TRUSTED_KEYS="/usr/local/src/debian/canonical-certs.pem"
+    CONFIG_SYSTEM_EXTRA_CERTIFICATE=y
+    CONFIG_SYSTEM_EXTRA_CERTIFICATE_SIZE=4096
+    CONFIG_SECONDARY_TRUSTED_KEYRING=y
+    CONFIG_SYSTEM_BLACKLIST_KEYRING=y
+    CONFIG_SYSTEM_BLACKLIST_HASH_LIST=""
+    CONFIG_SYSTEM_REVOCATION_LIST=y
+    CONFIG_SYSTEM_REVOCATION_KEYS="/usr/local/src/debian/canonical-revoked-certs.pem"
+    # end of Certificates for signature checking
+
+    ```
+
+    ![screenshot](images/img_s_1.png)
+    * ```sudo mkdir -p /usr/local/src/debian```
+    * ```sudo apt install linux-source```
+    * ```sudo cp -v /usr/src/linux-source-*/debian/canonical-*.pem /usr/local/src/debian/```
+    * ```sudo apt purge linux-source*```
+
 * ```make menuconfig```
 * Make no changes just save the file
 * ```make -j 5```
-* ```sudo make modules_install```
+* ```sudo make modules_install -j 5```
 ##### Getting error
 ```ph@ph-Standard-PC-Q35-ICH9-2009:~/linux-5.15$ sudo make modules_install
 sed: can't read modules.order: No such file or directory
 make: *** [Makefile:1501: __modinst_pre] Error 2```
 ```
+##### Getting error
+```  LD [M]  drivers/most/most_core.o
+  GEN     .version
+  CHK     include/generated/compile.h
+  LD      vmlinux.o
+  MODPOST vmlinux.symvers
+  MODINFO modules.builtin.modinfo
+  GEN     modules.builtin
+BTF: .tmp_vmlinux.btf: pahole (pahole) is not available
+Failed to generate BTF for vmlinux
+Try to disable CONFIG_DEBUG_INFO_BTF
+make: *** [Makefile:1183: vmlinux] Error 1
+```
+
+https://stackoverflow.com/questions/67670169/compiling-kernel-gives-error-no-rule-to-make-target-debian-certs-debian-uefi-ce
+
+* ```sudo make install -j 5```
+* ```sudo vi /etc/default/grub```
+    * chnage to 
+    ```
+    GRUB_TIMEOUT=5
+    GRUB_TIMEOUT_STYLE=menu
+    ```
+sudo update-grub
+sudo reboot
