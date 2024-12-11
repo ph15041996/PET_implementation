@@ -63,8 +63,9 @@ make: *** [Makefile:1501: __modinst_pre] Error 2```
 * ```cd linux-5.15/```
 * ```make mrproper```
 * ```cp /boot/config-$(uname -r) .config```
-* ```nano .config```\
-    Search for CONFIG_X86_X32 and set it to n \
+* ```vi .config```\
+    <!-- Search for CONFIG_X86_X32 and set it to n \ -->
+    Try to slip this step if error occurs the try this step :- Search for CONFIG_X86_X32 and set it to n \
     Certificates need to be configured :
     ```
     #
@@ -126,3 +127,23 @@ https://stackoverflow.com/questions/67670169/compiling-kernel-gives-error-no-rul
     ```
 sudo update-grub
 sudo reboot
+
+
+#### Getting Error
+```
+  CC [M]  crypto/async_tx/async_xor.o
+  CC      block/partitions/atari.o
+arch/x86/kvm/hyperv.c: In function ‘kvm_hv_flush_tlb’:
+arch/x86/kvm/hyperv.c:1856:1: error: the frame size of 1136 bytes is larger than 1024 bytes [-Werror=frame-larger-than=]
+ 1856 | }
+      | ^
+  ASN.1   crypto/asymmetric_keys/x509.asn1.[ch]
+  ASN.1   crypto/asymmetric_keys/x509_akid.asn1.[ch]
+  CC      crypto/asymmetric_keys/x509_public_key.o
+arch/x86/kvm/hyperv.c: In function ‘kvm_hv_send_ipi’:
+arch/x86/kvm/hyperv.c:1948:1: error: the frame size of 1176 bytes is larger than 1024 bytes [-Werror=frame-larger-than=]
+ 1948 | }
+      | ^
+  CC [M]  crypto/async_tx/async_pq.o
+  ASN.1   crypto/asymmetric_keys/pkcs7.asn1.[ch]
+```
